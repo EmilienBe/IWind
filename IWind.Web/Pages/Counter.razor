@@ -1,0 +1,99 @@
+@page "/counter"
+@using IWind.Web.Models
+@using IWind.Web.Services.Address
+@using IWind.Web.Services.Favorite
+
+<h1>Weather</h1>
+
+@if (ViewModel != null)
+{
+    <EditForm EditContext="EditContext">
+
+
+        <InputText @bind-Value="ViewModel.Search"/>
+        <br/>
+        <button class="btn btn-primary" @onclick="GetAddresses">GetAddresses</button>
+        <br/>
+        <br/>
+        @foreach (var favorite in ViewModel.FavoriteLocations)
+        {
+            <div class="row g-3">
+                <p>Name : @favorite.Name</p>
+            </div>
+        }
+
+
+
+
+
+
+
+
+        @* <InputNumber @bind-Value="ViewModel.Longitute"/> *@
+        @* <InputNumber @bind-Value="ViewModel.Latitude"/> *@
+        @* <br/> *@
+        @* <button class="btn btn-primary" @onclick="AddFavorite">Add to my favorites</button> *@
+        @* <br/> *@
+        @* <br/> *@
+        @* @foreach (var favorite in ViewModel.FavoriteLocations) *@
+        @* { *@
+        @*     <div class="row g-3"> *@
+        @*         <p>Longitude : @favorite.Longitude | Latitude : @favorite.Latitude |</p> *@
+        @*         <button class="btn btn-primary" @onclick="() => RemoveFavorite(favorite.Latitude, favorite.Longitude)">Remove</button> *@
+        @*     </div> *@
+        @* } *@
+    </EditForm>
+}
+
+@code {
+
+    [Inject]
+    public IFavoriteLocationService FavoriteLocationService { get; set; } = default!;
+
+    [Inject]
+    public IAddressService AddressService { get; set; } = default!;
+
+    private CounterViewModel ViewModel { get; set; }
+    private EditContext EditContext { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewModel = new CounterViewModel();
+            EditContext = new EditContext(ViewModel);
+    // ViewModel.FavoriteLocations = await FavoriteLocationService.GetFavoriteLocations();
+            StateHasChanged();
+        }
+    }
+
+    private async void GetAddresses()
+    {
+        var addresses = await AddressService.GetByFulltext(ViewModel.Search);
+        ViewModel.FavoriteLocations = addresses;
+        StateHasChanged();
+    }
+
+    // private async void AddFavorite()
+    // {
+    //     FavoriteLocationService.AddLocation(ViewModel.Latitude, ViewModel.Longitute);
+    //     ViewModel.FavoriteLocations = await FavoriteLocationService.GetFavoriteLocations();
+    //     StateHasChanged();
+    // }
+    //
+    // private async void RemoveFavorite(double latitude, double longitute)
+    // {
+    //     FavoriteLocationService.RemoveLocation(latitude, longitute);
+    //     ViewModel.FavoriteLocations = await FavoriteLocationService.GetFavoriteLocations();
+    //     StateHasChanged();
+    // }
+
+    public class CounterViewModel
+    {
+        public double Longitute { get; set; }
+        public double Latitude { get; set; }
+        public string Search { get; set; }
+        public List<LocationViewModel> FavoriteLocations { get; set; } = new();
+    }
+
+}
